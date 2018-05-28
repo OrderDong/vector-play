@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>cn.com.vector.play</groupId>
+	<artifactId>vector-play</artifactId>
+	<version>1.0.1</version>
+
+	<name>payment</name>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.0.1.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+
+	<properties>
+		<profiles.config.dir>${basedir}/release-conf</profiles.config.dir>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+
+		<commons-lang3.version>3.4</commons-lang3.version>
+		<druid.version>1.0.29</druid.version>
+		<mybatis.version>3.4.4</mybatis.version>
+		<mybatis-spring.version>1.3.1</mybatis-spring.version>
+		<fastjson.version>1.2.32</fastjson.version>
+		<mybatis-generator.version>1.3.2</mybatis-generator.version>
+		<mybatis-spring.version>1.2.2</mybatis-spring.version>
+
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons-lang3.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>1.5.3.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-properties-migrator</artifactId>
+        </dependency>
+        
+        <dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.14</version>
+		</dependency>
+
+    </dependencies>
+
+	<build>
+		<plugins>
+		 <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions><!--执行器 mvn assembly:assembly -->
+					<execution>
+						<id>make-targz</id>	<!--名字任意 -->
+						<phase>package</phase>	<!-- 绑定到package生命周期阶段上 -->
+						<goals>
+							<goal>single</goal><!-- 只运行一次 -->
+						</goals>
+						<configuration><!--输出文件路径 -->
+							<outputDirectory>${basedir}/release-install/tar.gz</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<appendAssemblyId>false</appendAssemblyId>
+					<descriptors> <!--描述文件路径 -->
+						<descriptor>${basedir}/assembly.xml</descriptor>
+					</descriptors>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>local</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<application.properties.file>${profiles.config.dir}/application.yml</application.properties.file>
+			</properties>
+		</profile>
+		<profile>
+			<id>test</id>
+			<properties>
+				<application.properties.file>${profiles.config.dir}/test-application.yml</application.properties.file>
+			</properties>
+		</profile>
+		<profile>
+			<id>product</id>
+			<properties>
+				<application.properties.file>${profiles.config.dir}/product-application.yml</application.properties.file>
+			</properties>
+		</profile>	
+	</profiles>	 
+	<packaging>war</packaging>
+</project>

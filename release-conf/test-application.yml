@@ -1,0 +1,49 @@
+server:
+  port: 8080
+  session-timeout: 30
+  tomcat:
+    max-threads: 500
+    uri-encoding: UTF-8
+
+spring:
+  application:
+    name: vector-play
+  mvc:
+    view: 
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
+
+druid:
+  type: com.alibaba.druid.pool.DruidDataSource
+  master:
+    url: jdbc:mysql://192.168.138.157:3307/vector_play?characterEncoding=UTF-8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&useUnicode=true
+    driver-class-name: com.mysql.jdbc.Driver
+    username: root
+    password: 123
+    initial-size: 5
+    min-idle: 3
+    max-active: 60000
+    test-on-borrow: true
+    validation-query : SELECT 'x' from DUAL
+    filters[0]: config
+    filters[1]: stat
+    filters[2]: wall
+  slave:
+    url: jdbc:mysql://192.168.138.157:3307/vector_play?characterEncoding=UTF-8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&useUnicode=true
+    driver-class-name: com.mysql.jdbc.Driver
+    username: root
+    password: 123
+    initial-size: 5
+    min-idle: 3
+    max-active: 60000
+    test-on-borrow: true
+    validation-query : SELECT 'x' from DUAL
+    filters[0]: config
+    filters[1]: stat
+    filters[2]: wall
+
+mybaits:
+  configLocation : mybatis-config.xml
+  path : \mapper\*.xml
+  pageSqlId : .*Page$
+  dialect : MYSQL
