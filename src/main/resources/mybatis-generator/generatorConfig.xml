@@ -11,26 +11,26 @@
 		</commentGenerator>
 
    	 	<jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                 connectionURL="jdbc:mysql://10.1.27.213/test" userId="root" password="123456" />          
+                 connectionURL="jdbc:mysql://192.168.138.157:3307/vector_play" userId="root" password="123456" />          
 		<javaTypeResolver>
 			<property name="forceBigDecimals" value="false" />
 		</javaTypeResolver>
 		
-		<javaModelGenerator targetPackage="cn.com.reflower.demo.entity"
-			targetProject="/Users/haikema/Developer/hd_workspace/reflower-demo/reflower-demo-support">
+		<javaModelGenerator targetPackage="cn.com.vector.play.entity"
+			targetProject="D:/install/workspace/workspaceIdea/vector-play">
 			<property name="enableSubPackages" value="true" />
 			<property name="trimStrings" value="false" />
 		</javaModelGenerator>
-		<sqlMapGenerator targetPackage="cn.com.reflower.demo.sqlMapper"
-			targetProject="/Users/haikema/Developer/hd_workspace/reflower-demo/reflower-demo-support">
+		<sqlMapGenerator targetPackage="cn.com.vector.play.sqlMap"
+			targetProject="D:/install/workspace/workspaceIdea/vector-play">
 			<property name="enableSubPackages" value="true" />
 		</sqlMapGenerator>
-		<javaClientGenerator targetPackage="cn.com.reflower.demo.dao"
-			targetProject="/Users/haikema/Developer/hd_workspace/reflower-demo/reflower-demo-support" type="XMLMAPPER">
+		<javaClientGenerator targetPackage="cn.com.vector.play.dao"
+			targetProject="D:/install/workspace/workspaceIdea/vector-play" type="XMLMAPPER">
 			<property name="enableSubPackages" value="true" />
 		</javaClientGenerator>
 		
-		<table tableName="t_user" domainObjectName="User"
+		<table tableName="t_war" domainObjectName="War"
 			enableCountByExample="false" enableUpdateByExample="false"
 			enableDeleteByExample="false" enableSelectByExample="false"
 			selectByExampleQueryId="false"></table>
