@@ -47,10 +47,13 @@ public class TokenCardController {
             return new RestResultModel(RestResponseCode.REQUEST_PARAM_ERROR,"请求参数为空！"+RestResponseCode.REQUEST_PARAM_ERROR,"");
         }
         //TODO 校验addr有效性
-
-        //TODO 查询tx的交易有效性
-
-        //TODO 查询事件的有效性
+        ServiceResult verifyAddrRes = contractService.verifyAddr(addr);
+        //TODO 查询tx的交易有效性，查询事件的有效性
+        ServiceResult verifyTransactionRes = contractService.verifyTransaction(txHash, addr);
+        if(!ServiceResult.isSuccess(verifyTransactionRes)){
+            return new RestResultModel(RestResponseCode.FAILED,"调用服务失败！"+RestResponseCode.FAILED_DESC,"");
+        }
+        
 
         //TODO 如果都没有问题，那么开奖，计算获取奖励
         String cardAward = getCardAward(cardKey,cardVal,1);

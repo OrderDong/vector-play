@@ -1,6 +1,7 @@
 package cn.com.vector.play.service.impl;
 
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.utils.Convert;
+import org.web3j.protocol.core.methods.response.Log;
 
 import cn.com.vector.play.common.CommonCode;
 import cn.com.vector.play.contract.DanDanCoin;
@@ -157,5 +159,47 @@ public class ContractServiceImpl implements ContractService {
 		ServiceResult serRet = ServiceResult.returnResult(ServiceResultEnum.SUCCESS.getTypeId(),
 				ServiceResultEnum.SUCCESS.getMessage(),null);
 		return serRet;
+	}
+
+	@Override
+	public ServiceResult verifyAddr(String addr) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ServiceResult verifyTransaction(String txHash, String addr) {
+		// 获取交易记录，查询交易是否成功
+		Web3j web3j =  ConnectionUtils.getInstall(publicKey);
+		TransactionReceipt transferReceipt = null;
+		try {
+			transferReceipt = web3j.ethGetTransactionReceipt(txHash).send().getResult();
+		} catch (IOException e) {
+			log.error("加载交易记录失败，txHash为:"+txHash);
+			log.error(e.getMessage());
+		}
+		log.info("TxReceipt Status:"+transferReceipt.getStatus());
+		if(transferReceipt.isStatusOK()) {
+			String fromAddr = transferReceipt.getFrom();
+			String contractAddr = transferReceipt.getTo();
+			if(!fromAddr.equals(addr)) {
+				log.error("当前账户与交易记录不匹配，当前账户地址为:"+fromAddr);
+				return null;
+			}
+			if(!contractAddr.equals(auctionWarAddr)) {
+				log.error("此交易与本平台不相关！");
+				return null;
+			}
+			
+			List<Log> list = transferReceipt.getLogs();
+			String countDDC = "000000000000000000000000000000000000000000000000000000000000000a";
+			if(list.get(0).getTopics().get(2).contains(publicKey.substring(2)) &&
+					countDDC.equals(list.get(0).getData())) {
+				ServiceResult serRet = ServiceResult.returnResult(ServiceResultEnum.SUCCESS.getTypeId(),
+						ServiceResultEnum.SUCCESS.getMessage(),null);
+				return serRet;
+			}
+		}
+		return null;
 	}
 }
