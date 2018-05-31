@@ -25,10 +25,10 @@ public class ConnectionUtils {
     }
 
     public  static Credentials getCredentials(String keyFlag,String privateKey) throws Exception {
-        byte[] key = new BASE64Decoder().decodeBuffer(keyFlag);
-        byte[] str4 = Des3Util.ees3DecodeECB(key, privateKey.getBytes("UTF-8"));
+    	byte[] key = new BASE64Decoder().decodeBuffer(keyFlag);
+    	byte[] data = new BASE64Decoder().decodeBuffer(privateKey);
+        byte[] str4 = Des3Util.ees3DecodeECB(key,data);
         String pwd = new String(str4,"UTF-8");
-        System.out.println("pwd;"+pwd);
         ECKeyPair keyPair = ECKeyPair.create(Numeric.toBigInt(pwd));
         Credentials credentials = Credentials.create(keyPair);
         return credentials;

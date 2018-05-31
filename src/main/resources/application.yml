@@ -23,7 +23,7 @@ contract:
   path: D:/blockchain/nettest/ropsten/keystore/UTC--2018-04-22T08-28-10.946419400Z--d3ee6bbe053a2510a2ae8faf58ebabecebb624c3
   directory: D:/blockchain/nettest/ropsten/keystore
   key-flag: OX100YWJjZasdfsbW5vSWER2345cHFyc3R1dnd4
-  private-key: jFd0Jp+xA8JJpAuXXbiLEw==
+  private-key: UC4X085Pgd1MrdF8NZfxm1WDht92cE8DWlVqxJmOCnR1/OLx3A685fh6306JZm97HIE5h09oV3nqXKNafSRAVhBNKCbprRMA
   public-key: 0x339177a6a2b21a8b7CE76811C86D3a2C99301355
   token-addr: 0x4195E850A8504ef0Cc184Ac1FC22B5Ee5AF0321B
   card-addr: 0xe007E924e6E3641AB9CE0b8a4bf0c9F2F59BB83E

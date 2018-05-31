@@ -99,4 +99,8 @@ public class TokenCardController {
         log.info("open award data,keylength;"+keys.length+",valueLength:"+values.length+",random:"+s+",value:"+award);
         return award;
     }
+    @RequestMapping("/test")
+    public RestResultModel test(HttpServletRequest request){
+        return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC,null);
+    }
 }

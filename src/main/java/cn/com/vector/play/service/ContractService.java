@@ -1,10 +1,6 @@
 package cn.com.vector.play.service;
 
-import cn.com.vector.play.entity.User;
 import cn.com.vector.play.util.ServiceResult;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * 
