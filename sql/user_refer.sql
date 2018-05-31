@@ -1,4 +1,5 @@
 drop table if exists t_sys_user;
+drop table if exists t_war;
 
 create table t_sys_user (
   id bigint auto_increment COMMENT '主键',
@@ -25,3 +26,20 @@ create unique index idx_t_sys_user_username on t_sys_user(username);
 create index idx_t_sys_user_organization_id on t_sys_user(organization_id);
 create index idx_t_sys_user_status on t_sys_user(status);
 create index idx_t_sys_user_mobile on t_sys_user(mobile);
+
+create table t_war (
+  id bigint auto_increment COMMENT '主键',
+  tx_hash varchar(100) COMMENT '发起HASH',
+  token_count int DEFAULT 0 COMMENT '获得20token数量',
+  card_id varchar(100) DEFAULT NULL COMMENT '卡牌tokenId',
+  token_hash varchar(100) COMMENT '发起划转token tx',
+  card_hash varchar(100) COMMENT '发起划转card tx',
+  award_user varchar(100) DEFAULT NULL COMMENT '接受人',
+  create_time datetime DEFAULT NULL,
+  update_time datetime DEFAULT NULL COMMENT '更新时间',
+  update_user varchar(100) DEFAULT NULL COMMENT '更新人',
+  status_ddc int(1) DEFAULT NULL COMMENT '1:完成,2:未完成',
+  status_card int(1) DEFAULT NULL COMMENT '1:完成,2:未完成',
+  constraint pk_t_war primary key(id)
+) charset=utf8 ENGINE=InnoDB;
+create index idx_t_war_award_user_id on t_war(award_user);
