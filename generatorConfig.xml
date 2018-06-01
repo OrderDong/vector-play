@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+	<context id="context1">
+		<commentGenerator>
+			<property name="suppressDate" value="true" />
+			<!-- 是否去除自动生成的注释 true：是 ： false:否 -->
+			<property name="suppressAllComments" value="true" />
+		</commentGenerator>
+		<jdbcConnection connectionURL="jdbc:mysql://192.168.138.157:3307/vector_play"
+			driverClass="com.mysql.jdbc.Driver" password="123" userId="root" />
+		<javaModelGenerator targetPackage="cn.com.vector.play.entity"
+			targetProject="vector-play/src/main/java" />
+		<sqlMapGenerator targetPackage="cn.com.vector.play.sqlMap"
+			targetProject="vector-play/src/main/java" />
+		<javaClientGenerator targetPackage="cn.com.vector.play.dao"
+			targetProject="vector-play/src/main/java" type="XMLMAPPER" />
+		<table tableName="t_war" domainObjectName="War"
+			enableCountByExample="false" enableUpdateByExample="false"
+			enableDeleteByExample="false" enableSelectByExample="false"
+			selectByExampleQueryId="false">
+		</table>
+	</context>
+</generatorConfiguration>
