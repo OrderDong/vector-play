@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,7 +41,8 @@ public class TokenCardController {
     @Value("${pro.tokenval}")
     private String tokenVal;
 
-    @RequestMapping("/open")
+    //@RequestMapping("/open")
+    @PostMapping("/open")
     public RestResultModel openAward(HttpServletRequest request,String txHash,String addr){
 
         if(StringUtils.isBlank(txHash) || StringUtils.isBlank(addr)){
@@ -101,6 +103,21 @@ public class TokenCardController {
         }
         log.info("open award data,keylength;"+keys.length+",valueLength:"+values.length+",random:"+s+",value:"+award);
         return award;
+    }
+    /**
+     * 开奖结果查询
+     * @param request
+     * @param account
+     * @return
+     */
+    @RequestMapping("/retdata")
+    public RestResultModel openData(HttpServletRequest request,String account){
+    	//TODO 校验账户
+    	
+    	//TODO 获取结果数据，通过账户查询
+    	
+    	String result = "3,6";
+        return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC,result);
     }
     @RequestMapping("/test")
     public RestResultModel test(HttpServletRequest request){
