@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.com.vector.play.dao.WarMapper">
+	<resultMap id="BaseResultMap" type="cn.com.vector.play.entity.War">
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="tx_hash" jdbcType="VARCHAR" property="txHash" />
+		<result column="token_count" jdbcType="INTEGER" property="tokenCount" />
+		<result column="card_id" jdbcType="VARCHAR" property="cardId" />
+		<result column="token_hash" jdbcType="VARCHAR" property="tokenHash" />
+		<result column="card_hash" jdbcType="VARCHAR" property="cardHash" />
+		<result column="award_user" jdbcType="VARCHAR" property="awardUser" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+		<result column="update_user" jdbcType="VARCHAR" property="updateUser" />
+		<result column="status_ddc" jdbcType="INTEGER" property="statusDdc" />
+		<result column="status_card" jdbcType="INTEGER" property="statusCard" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, tx_hash, token_count, card_id, token_hash, card_hash, award_user,
+		create_time,
+		update_time, update_user, status_ddc, status_card
+	</sql>
+	<select id="selectByPrimaryKey" parameterType="java.lang.Long"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_war
+		where id = #{id,jdbcType=BIGINT}
+	</select>
+	<select id="selectByTxHash" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_war
+		where tx_hash = #{txHash,jdbcType=VARCHAR}
+	</select>
+	<select id="selectByAwardUser" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_war
+		where award_user = #{"awardUser",jdbcType=VARCHAR} order by create_time desc
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from t_war
+		where id = #{id,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="cn.com.vector.play.entity.War">
+		insert into t_war (id, tx_hash, token_count,
+		card_id, token_hash, card_hash,
+		award_user, create_time, update_time,
+		update_user, status_ddc, status_card
+		)
+		values (#{id,jdbcType=BIGINT}, #{txHash,jdbcType=VARCHAR},
+		#{tokenCount,jdbcType=INTEGER},
+		#{cardId,jdbcType=VARCHAR}, #{tokenHash,jdbcType=VARCHAR}, #{cardHash,jdbcType=VARCHAR},
+		#{awardUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+		#{updateTime,jdbcType=TIMESTAMP},
+		#{updateUser,jdbcType=VARCHAR}, #{statusDdc,jdbcType=INTEGER}, #{statusCard,jdbcType=INTEGER}
+		)
+	</insert>
+	<insert id="insertSelective" parameterType="cn.com.vector.play.entity.War">
+		insert into t_war
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="txHash != null">
+				tx_hash,
+			</if>
+			<if test="tokenCount != null">
+				token_count,
+			</if>
+			<if test="cardId != null">
+				card_id,
+			</if>
+			<if test="tokenHash != null">
+				token_hash,
+			</if>
+			<if test="cardHash != null">
+				card_hash,
+			</if>
+			<if test="awardUser != null">
+				award_user,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="updateUser != null">
+				update_user,
+			</if>
+			<if test="statusDdc != null">
+				status_ddc,
+			</if>
+			<if test="statusCard != null">
+				status_card,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="txHash != null">
+				#{txHash,jdbcType=VARCHAR},
+			</if>
+			<if test="tokenCount != null">
+				#{tokenCount,jdbcType=INTEGER},
+			</if>
+			<if test="cardId != null">
+				#{cardId,jdbcType=VARCHAR},
+			</if>
+			<if test="tokenHash != null">
+				#{tokenHash,jdbcType=VARCHAR},
+			</if>
+			<if test="cardHash != null">
+				#{cardHash,jdbcType=VARCHAR},
+			</if>
+			<if test="awardUser != null">
+				#{awardUser,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateUser != null">
+				#{updateUser,jdbcType=VARCHAR},
+			</if>
+			<if test="statusDdc != null">
+				#{statusDdc,jdbcType=INTEGER},
+			</if>
+			<if test="statusCard != null">
+				#{statusCard,jdbcType=INTEGER},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="cn.com.vector.play.entity.War">
+		update t_war
+		<set>
+			<if test="txHash != null">
+				tx_hash = #{txHash,jdbcType=VARCHAR},
+			</if>
+			<if test="tokenCount != null">
+				token_count = #{tokenCount,jdbcType=INTEGER},
+			</if>
+			<if test="cardId != null">
+				card_id = #{cardId,jdbcType=VARCHAR},
+			</if>
+			<if test="tokenHash != null">
+				token_hash = #{tokenHash,jdbcType=VARCHAR},
+			</if>
+			<if test="cardHash != null">
+				card_hash = #{cardHash,jdbcType=VARCHAR},
+			</if>
+			<if test="awardUser != null">
+				award_user = #{awardUser,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateUser != null">
+				update_user = #{updateUser,jdbcType=VARCHAR},
+			</if>
+			<if test="statusDdc != null">
+				status_ddc = #{statusDdc,jdbcType=INTEGER},
+			</if>
+			<if test="statusCard != null">
+				status_card = #{statusCard,jdbcType=INTEGER},
+			</if>
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="cn.com.vector.play.entity.War">
+		update t_war
+		set tx_hash = #{txHash,jdbcType=VARCHAR},
+		token_count = #{tokenCount,jdbcType=INTEGER},
+		card_id = #{cardId,jdbcType=VARCHAR},
+		token_hash = #{tokenHash,jdbcType=VARCHAR},
+		card_hash = #{cardHash,jdbcType=VARCHAR},
+		award_user = #{awardUser,jdbcType=VARCHAR},
+		create_time = #{createTime,jdbcType=TIMESTAMP},
+		update_time = #{updateTime,jdbcType=TIMESTAMP},
+		update_user = #{updateUser,jdbcType=VARCHAR},
+		status_ddc = #{statusDdc,jdbcType=INTEGER},
+		status_card = #{statusCard,jdbcType=INTEGER}
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+</mapper>

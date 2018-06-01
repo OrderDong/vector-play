@@ -3,8 +3,12 @@ package cn.com.vector.play.service.impl;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
@@ -17,7 +21,10 @@ import cn.com.vector.play.common.CommonCode;
 import cn.com.vector.play.contract.DanDanCoin;
 import cn.com.vector.play.contract.EggAuctionWar;
 import cn.com.vector.play.contract.EggCard;
+import cn.com.vector.play.dao.WarMapper;
+import cn.com.vector.play.entity.War;
 import cn.com.vector.play.service.ContractService;
+import cn.com.vector.play.service.WarService;
 import cn.com.vector.play.util.ConnectionUtils;
 import cn.com.vector.play.util.ServiceResult;
 import cn.com.vector.play.util.ServiceResultEnum;
@@ -52,17 +59,23 @@ public class ContractServiceImpl implements ContractService {
 	private static String tokenAddr = "0x4195E850A8504ef0Cc184Ac1FC22B5Ee5AF0321B";
 	
 	//@Value("${contract.card-addr}")
-	private static String cardAddr = "0xf02F2421678A129CD22E4799954eaB73CB338555";
+	private static String cardAddr = "0xe007E924e6E3641AB9CE0b8a4bf0c9F2F59BB83E";
 	
 	//@Value("${contract.auction-war-addr}")
 	private static String auctionWarAddr = "0x09b4685F46e44194fBf23f251ba9Ca653EbB5425";
 	
 	//@Value("${contract.auction-card-addr}")
-	private static String auctionCardAddr = "0x88e5C51dBF8A289B05f33394D8879441352855A0";
+	private static String auctionCardAddr = "0x7A1b2716c3bbb411877CC782fA4Bfdf80538589c";
 
+	@Autowired
+	private WarService warService;
+	
 	@Override
 	public ServiceResult openAward(String txHash, String addr, String cardAward, String tokenCount) {
 		log.info("into open award service impl,txHash:"+txHash+",addr:"+addr+",cardAward:"+cardAward+",token:"+tokenCount);
+		War war = new War();
+		war.setTxHash(txHash);
+		war.setAwardUser(addr);
 		//TODO 检验
 		//合约加载
 		Web3j web3j =  ConnectionUtils.getInstall(publicKey);
@@ -118,6 +131,7 @@ public class ContractServiceImpl implements ContractService {
 		if(results.size() > 0){
 			EggCard.CreatedCardEventResponse obj = results.get(0);
 			tokenId = obj.cardId;
+			war.setCardId(tokenId.toString());
 		}else{
 			log.info("获取已创建的卡牌失败");
 			return ServiceResult.returnResult(ServiceResultEnum.REQUEST_PARAM_ERROR.getTypeId(),"获取卡牌失败,"+ServiceResultEnum.REQUEST_PARAM_ERROR.getMessage(),null);
@@ -132,6 +146,13 @@ public class ContractServiceImpl implements ContractService {
 		}
 		log.info("startTxHash:"+txHash+",executing transfer card waiting...");
 		String cardTransferTxHash = cardTransfer.getTransactionHash();
+		war.setCardHash(cardTransferTxHash);
+		if(cardTransfer.isStatusOK()) {
+			war.setStatusCard(1);
+		} else {
+			war.setStatusCard(2);
+		}
+		
 		log.info("startTxHash:"+txHash+",cardTransferTxHash seccess transfer:"+cardTransferTxHash);
 
 		//TODO 20合约token转移
@@ -152,9 +173,17 @@ public class ContractServiceImpl implements ContractService {
 		}
 		log.info("startTxHash:"+txHash+",executing ddc transfer waiting...");
 		String ddcTransferTxHash = ddcTransfer.getTransactionHash();
+		war.setTokenCount(Integer.getInteger(tokenCount));
+		war.setTokenHash(ddcTransferTxHash);
+		if(ddcTransfer.isStatusOK()) {
+			war.setStatusDdc(1);
+		} else {
+			war.setStatusDdc(2);
+		}
 		log.info("startTxHash:"+txHash+",ddcTransferTxHash seccess transfer:"+ddcTransferTxHash);
 
 		//TODO 数据保存
+		warService.createWar(war, "add");
 		
 		ServiceResult serRet = ServiceResult.returnResult(ServiceResultEnum.SUCCESS.getTypeId(),
 				ServiceResultEnum.SUCCESS.getMessage(),null);
@@ -202,4 +231,5 @@ public class ContractServiceImpl implements ContractService {
 		}
 		return null;
 	}
+
 }

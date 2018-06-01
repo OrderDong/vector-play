@@ -1,8 +1,10 @@
 package cn.com.vector.play.controller;
 
+import cn.com.vector.play.entity.War;
 import cn.com.vector.play.response.RestResponseCode;
 import cn.com.vector.play.response.RestResultModel;
 import cn.com.vector.play.service.ContractService;
+import cn.com.vector.play.service.WarService;
 import cn.com.vector.play.util.ServiceResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.alibaba.fastjson.JSON;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -31,6 +35,8 @@ public class TokenCardController {
     private static Map<String,String> storeRes = new HashMap<String,String>();
     @Autowired
     private ContractService contractService;
+    @Autowired
+    private WarService warService;
 
     @Value("${pro.cardkey}")
     private String cardKey;
@@ -50,6 +56,12 @@ public class TokenCardController {
         }
         //TODO 校验addr有效性
         ServiceResult verifyAddrRes = contractService.verifyAddr(addr);
+        //TODO 验证是否已发放奖励
+        if(StringUtils.isNotEmpty(storeRes.get(txHash)) && storeRes.get(txHash).equals("Y")) {
+			return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC, storeRes.get(txHash));
+		}
+        storeRes.put(txHash, "Y");
+        
         //TODO 查询tx的交易有效性，查询事件的有效性
         ServiceResult verifyTransactionRes = contractService.verifyTransaction(txHash, addr);
         if(!ServiceResult.isSuccess(verifyTransactionRes)){
@@ -67,7 +79,7 @@ public class TokenCardController {
         }
         //TODO storeRes 缓存奖励
         storeRes.put(addr,cardAward+","+tokenAward);
-
+        storeRes.remove(txHash);
         return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC, storeRes.get(addr));
     }
 
@@ -115,9 +127,9 @@ public class TokenCardController {
     	//TODO 校验账户
     	
     	//TODO 获取结果数据，通过账户查询
+    	War war = warService.selectByAwardUser(account);
     	
-    	String result = "3,6";
-        return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC,result);
+        return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC,war);
     }
     @RequestMapping("/test")
     public RestResultModel test(HttpServletRequest request){

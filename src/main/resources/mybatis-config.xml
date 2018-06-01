@@ -14,5 +14,6 @@
 	</settings>
 	<mappers>
 		  <mapper resource="mapper/UserDao.xml" />
+		  <mapper resource="mapper/WarMapper.xml" />
 	</mappers>
 </configuration>

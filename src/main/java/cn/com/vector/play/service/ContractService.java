@@ -1,5 +1,6 @@
 package cn.com.vector.play.service;
 
+import cn.com.vector.play.entity.War;
 import cn.com.vector.play.util.ServiceResult;
 
 /**

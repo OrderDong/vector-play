@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import cn.com.vector.play.service.UserService;
+import cn.com.vector.play.service.WarService;
 
 public class SpringUtil {
 
@@ -23,6 +24,8 @@ public class SpringUtil {
 
 	// service
 	public static final UserService userService = configApplicationContext.getBean(UserService.class);
+
+	public static final WarService warService = configApplicationContext.getBean(WarService.class);
 	
 
 }
