@@ -173,7 +173,7 @@ public class ContractServiceImpl implements ContractService {
 		}
 		log.info("startTxHash:"+txHash+",executing ddc transfer waiting...");
 		String ddcTransferTxHash = ddcTransfer.getTransactionHash();
-		war.setTokenCount(Integer.getInteger(tokenCount));
+		war.setTokenCount(Integer.parseInt(tokenCount));
 		war.setTokenHash(ddcTransferTxHash);
 		if(ddcTransfer.isStatusOK()) {
 			war.setStatusDdc(1);
@@ -211,18 +211,18 @@ public class ContractServiceImpl implements ContractService {
 		if(transferReceipt.isStatusOK()) {
 			String fromAddr = transferReceipt.getFrom();
 			String contractAddr = transferReceipt.getTo();
-			if(!fromAddr.equals(addr)) {
+			if(!fromAddr.equals(addr.toLowerCase())) {
 				log.error("当前账户与交易记录不匹配，当前账户地址为:"+fromAddr);
 				return null;
 			}
-			if(!contractAddr.equals(auctionWarAddr)) {
+			if(!contractAddr.equals(auctionWarAddr.toLowerCase())) {
 				log.error("此交易与本平台不相关！");
 				return null;
 			}
 			
 			List<Log> list = transferReceipt.getLogs();
-			String countDDC = "000000000000000000000000000000000000000000000000000000000000000a";
-			if(list.get(0).getTopics().get(2).contains(publicKey.substring(2)) &&
+			String countDDC = "0x0000000000000000000000000000000000000000000000008ac7230489e80000";
+			if(list.get(0).getTopics().get(2).contains(publicKey.substring(2).toLowerCase()) &&
 					countDDC.equals(list.get(0).getData())) {
 				ServiceResult serRet = ServiceResult.returnResult(ServiceResultEnum.SUCCESS.getTypeId(),
 						ServiceResultEnum.SUCCESS.getMessage(),null);

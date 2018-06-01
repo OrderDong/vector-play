@@ -129,7 +129,7 @@ public class TokenCardController {
     	//TODO 获取结果数据，通过账户查询
     	War war = warService.selectByAwardUser(account);
     	
-        return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC,war);
+        return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC,JSON.toJSON(war));
     }
     @RequestMapping("/test")
     public RestResultModel test(HttpServletRequest request){
