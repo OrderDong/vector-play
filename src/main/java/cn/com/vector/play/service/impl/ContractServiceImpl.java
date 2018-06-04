@@ -202,7 +202,19 @@ public class ContractServiceImpl implements ContractService {
 		Web3j web3j =  ConnectionUtils.getInstall(publicKey);
 		TransactionReceipt transferReceipt = null;
 		try {
-			transferReceipt = web3j.ethGetTransactionReceipt(txHash).send().getResult();
+			for (int i = 0; i < 20; i++) {
+				transferReceipt = web3j.ethGetTransactionReceipt(txHash).send().getResult();
+				if(transferReceipt != null){
+					break;
+				} else {
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
 		} catch (IOException e) {
 			log.error("加载交易记录失败，txHash为:"+txHash);
 			log.error(e.getMessage());
