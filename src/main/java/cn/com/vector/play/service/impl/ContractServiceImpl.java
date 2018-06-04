@@ -59,13 +59,13 @@ public class ContractServiceImpl implements ContractService {
 	private static String tokenAddr = "0x4195E850A8504ef0Cc184Ac1FC22B5Ee5AF0321B";
 	
 	//@Value("${contract.card-addr}")
-	private static String cardAddr = "0xe007E924e6E3641AB9CE0b8a4bf0c9F2F59BB83E";
+	private static String cardAddr = "0xf02F2421678A129CD22E4799954eaB73CB338555";
 	
 	//@Value("${contract.auction-war-addr}")
 	private static String auctionWarAddr = "0x09b4685F46e44194fBf23f251ba9Ca653EbB5425";
 	
 	//@Value("${contract.auction-card-addr}")
-	private static String auctionCardAddr = "0x7A1b2716c3bbb411877CC782fA4Bfdf80538589c";
+	private static String auctionCardAddr = "0x88e5C51dBF8A289B05f33394D8879441352855A0";
 
 	@Autowired
 	private WarService warService;
