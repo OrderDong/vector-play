@@ -3,6 +3,8 @@ package cn.com.vector.play.service.impl;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +16,9 @@ import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.tuples.generated.Tuple5;
+import org.web3j.tuples.generated.Tuple6;
+import org.web3j.tuples.generated.Tuple7;
 import org.web3j.utils.Convert;
 import org.web3j.protocol.core.methods.response.Log;
 
@@ -21,11 +26,15 @@ import cn.com.vector.play.common.CommonCode;
 import cn.com.vector.play.contract.DanDanCoin;
 import cn.com.vector.play.contract.EggAuctionWar;
 import cn.com.vector.play.contract.EggCard;
+import cn.com.vector.play.contract.EggCardMarket;
 import cn.com.vector.play.dao.WarMapper;
+import cn.com.vector.play.entity.DDCAuction;
 import cn.com.vector.play.entity.War;
 import cn.com.vector.play.service.ContractService;
 import cn.com.vector.play.service.WarService;
 import cn.com.vector.play.util.ConnectionUtils;
+import cn.com.vector.play.util.DateUtils;
+import cn.com.vector.play.util.Page;
 import cn.com.vector.play.util.ServiceResult;
 import cn.com.vector.play.util.ServiceResultEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +74,7 @@ public class ContractServiceImpl implements ContractService {
 	private static String auctionWarAddr = "0x09b4685F46e44194fBf23f251ba9Ca653EbB5425";
 	
 	//@Value("${contract.auction-card-addr}")
-	private static String auctionCardAddr = "0x88e5C51dBF8A289B05f33394D8879441352855A0";
+	private static String auctionCardAddr = "0x012c6a289bc2719638ad9a9f6046501e88f8bb73";
 
 	@Autowired
 	private WarService warService;
@@ -76,6 +85,8 @@ public class ContractServiceImpl implements ContractService {
 		War war = new War();
 		war.setTxHash(txHash);
 		war.setAwardUser(addr);
+		warService.createWar(war, "add");
+		war = warService.selectByTxHash(txHash);
 		//TODO 检验
 		//合约加载
 		Web3j web3j =  ConnectionUtils.getInstall(publicKey);
@@ -183,8 +194,9 @@ public class ContractServiceImpl implements ContractService {
 		log.info("startTxHash:"+txHash+",ddcTransferTxHash seccess transfer:"+ddcTransferTxHash);
 
 		//TODO 数据保存
-		warService.createWar(war, "add");
-		
+		war.setUpdateUser(addr);
+		warService.createWar(war, "update");
+		log.info("此次游戏结束。startTxHash:"+txHash);
 		ServiceResult serRet = ServiceResult.returnResult(ServiceResultEnum.SUCCESS.getTypeId(),
 				ServiceResultEnum.SUCCESS.getMessage(),null);
 		return serRet;
@@ -242,6 +254,130 @@ public class ContractServiceImpl implements ContractService {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public Map<String,Object> marketDDCList(int pageSize, int pageNumber) {
+		//合约加载
+		Web3j web3j =  ConnectionUtils.getInstall(publicKey);
+		EggAuctionWar auctionWarContract = null;
+		Credentials cre = null;
+		try {
+			cre = ConnectionUtils.getCredentials(keyFlag,privateKey);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		try {
+			auctionWarContract = EggAuctionWar.load(auctionWarAddr, web3j, cre,CommonCode.GAS_PRICE, CommonCode.GAS_LIMIT);
+		} catch (Exception e) {
+			log.error("加载合约失败,合约地址为:"+auctionWarAddr);
+			log.error(e.getMessage());
+			e.printStackTrace();
+		}
+		Map<String,Object> result = new HashMap<String,Object>();
+		List<DDCAuction> ddcAs = null;
+		try {
+			ddcAs = new ArrayList<DDCAuction>();
+			List auctions = auctionWarContract.getAuctions().send();
+			int currIdx = (pageNumber > 1 ? (pageNumber -1) * pageSize : 0);
+			for (int i = 0; i < pageSize && i < auctions.size() - currIdx; i++) {
+				System.out.println("-----------"+auctions.get(currIdx+i).toString());
+				Tuple6<BigInteger, String, String, BigInteger, BigInteger, BigInteger> auction = 
+						auctionWarContract.getAuction(new BigInteger(auctions.get(currIdx+i).toString())).send();
+				DDCAuction ddcA = new DDCAuction();
+				ddcA.setId(auction.getValue1());
+				ddcA.setSeller(auction.getValue2());
+				ddcA.setSellerName(auction.getValue3());
+				ddcA.setPrice(auction.getValue4());
+				ddcA.setExpiresAt(auction.getValue5());
+				ddcA.setSalesCount(auction.getValue6());
+				ddcAs.add(ddcA);
+			}
+			int totalRecord = auctions.size();
+			int totalPage = 0;
+			if (totalRecord % pageSize == 0) {
+				totalPage = totalRecord / pageSize;
+			} else {
+				totalPage = totalRecord / pageSize + 1;
+			}
+			result.put("list", ddcAs);
+			result.put("pageNumber", pageNumber);
+			result.put("pageSize", pageSize);
+			result.put("totalRecord", totalRecord);
+			result.put("totalPage", totalPage);
+		} catch (Exception e) {
+			log.error("获取DDC拍卖列表失败！");
+			log.error(e.getMessage());
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	@Override
+	public Map<String, Object> marketCardList(int pageSize, int pageNumber) {
+		//合约加载
+		Web3j web3j =  ConnectionUtils.getInstall(publicKey);
+		EggCardMarket eggCardMarket = null;
+		EggCard eggCard = null;
+		Credentials cre = null;
+		try {
+			cre = ConnectionUtils.getCredentials(keyFlag,privateKey);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		try {
+			eggCardMarket = EggCardMarket.load(auctionCardAddr, web3j, cre,CommonCode.GAS_PRICE, CommonCode.GAS_LIMIT);
+			eggCard = EggCard.load(cardAddr, web3j, cre,CommonCode.GAS_PRICE, CommonCode.GAS_LIMIT);
+		} catch (Exception e) {
+			log.error("加载合约失败,合约地址为:"+auctionWarAddr);
+			log.error(e.getMessage());
+			e.printStackTrace();
+		}
+		Map<String,Object> result = new HashMap<String,Object>();
+		List<Map<String,Object>> cardAs = null;
+		try {
+			cardAs = new ArrayList<Map<String,Object>>();
+			List<BigInteger> eggCardMarketList = eggCardMarket.getAuctionIndex().send().getValue2();
+			int currIdx = (pageNumber > 1 ? (pageNumber -1) * pageSize : 0);
+			for (int i = 0; i < pageSize && i < eggCardMarketList.size() - currIdx; i++) {
+				System.out.println("-----------"+eggCardMarketList.get(currIdx+i).toString());
+				String tokenId = eggCardMarketList.get(currIdx+i).toString();
+				
+				Tuple5<BigInteger, String, BigInteger, BigInteger, BigInteger> cardAuction = 
+						eggCardMarket.getCardAuction(new BigInteger(tokenId)).send();
+				
+				Tuple7<BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, BigInteger> card = 
+				eggCard.getCard(new BigInteger(tokenId)).send();
+				
+				Map<String,Object> tempMap = new HashMap<String,Object>();
+				tempMap.put("eType", card.getValue6());
+				tempMap.put("attrId", card.getValue7());
+				tempMap.put("tokenId", tokenId);
+				tempMap.put("seller", cardAuction.getValue2());
+				tempMap.put("priceDDC", Convert.fromWei(cardAuction.getValue3().toString(), Convert.Unit.ETHER).toPlainString());
+				tempMap.put("priceDDCWei", cardAuction.getValue3());
+				tempMap.put("expiresAt", DateUtils.dateToFormatStr(new Date(cardAuction.getValue4().longValue()), "yyyy-MM-dd HH:mm:ss"));
+				tempMap.put("time", DateUtils.dateToFormatStr(new Date(cardAuction.getValue5().longValue()*1000), "yyyy-MM-dd HH:mm:ss"));
+				cardAs.add(tempMap);
+			}
+			int totalRecord = eggCardMarketList.size();
+			int totalPage = 0;
+			if (totalRecord % pageSize == 0) {
+				totalPage = totalRecord / pageSize;
+			} else {
+				totalPage = totalRecord / pageSize + 1;
+			}
+			result.put("list", cardAs);
+			result.put("pageNumber", pageNumber);
+			result.put("pageSize", pageSize);
+			result.put("totalRecord", totalRecord);
+			result.put("totalPage", totalPage);
+		} catch (Exception e) {
+			log.error("获取卡牌拍卖列表失败！");
+			log.error(e.getMessage());
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 }

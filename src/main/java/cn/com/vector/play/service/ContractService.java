@@ -1,6 +1,7 @@
 package cn.com.vector.play.service;
 
-import cn.com.vector.play.entity.War;
+import java.util.Map;
+
 import cn.com.vector.play.util.ServiceResult;
 
 /**
@@ -34,6 +35,20 @@ public interface ContractService {
 	 * @return
 	 */
 	public ServiceResult verifyTransaction(String txHash, String addr);
+
+	/**
+	 * 获取市场蛋蛋币拍卖列表
+	 * @return
+	 */
+	public Map<String,Object> marketDDCList(int pageSize, int pageNumber);
+
+	/**
+	 * 获取市场卡牌拍卖列表
+	 * @param parseInt
+	 * @param parseInt2
+	 * @return
+	 */
+	public Map<String, Object> marketCardList(int parseInt, int pageNumber);
 
 	
 }

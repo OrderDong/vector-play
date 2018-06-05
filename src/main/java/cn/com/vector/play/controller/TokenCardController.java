@@ -1,15 +1,18 @@
 package cn.com.vector.play.controller;
 
+import cn.com.vector.play.entity.DDCAuction;
 import cn.com.vector.play.entity.War;
 import cn.com.vector.play.response.RestResponseCode;
 import cn.com.vector.play.response.RestResultModel;
 import cn.com.vector.play.service.ContractService;
 import cn.com.vector.play.service.WarService;
+import cn.com.vector.play.util.Page;
 import cn.com.vector.play.util.ServiceResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +21,7 @@ import com.alibaba.fastjson.JSON;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -26,6 +30,7 @@ import java.util.Random;
  */
 @Slf4j
 @RestController
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("/admin/card")
 public class TokenCardController {
 
@@ -131,6 +136,47 @@ public class TokenCardController {
     	
         return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC,JSON.toJSON(war));
     }
+    
+    /**
+     * 获取市场蛋蛋币拍卖列表
+     * @param request
+     * @param account
+     * @return
+     */
+    @RequestMapping("/marketDDCList")
+    public RestResultModel marketDDCList(HttpServletRequest request,String account){
+    	String pageSize = request.getParameter("pageSize");
+    	if(StringUtils.isEmpty(pageSize))
+    		pageSize = "20";
+    	String pageNumber = request.getParameter("pageNumber");
+    	if(StringUtils.isEmpty(pageNumber))
+    		return new RestResultModel(RestResponseCode.REQUEST_PARAM_ERROR,"请求参数为空！"+RestResponseCode.REQUEST_PARAM_ERROR,"");
+    		
+    	Map<String,Object> res = contractService.marketDDCList(Integer.parseInt(pageSize), Integer.parseInt(pageNumber));
+
+        return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC,JSON.toJSON(res));
+    }
+    
+    /**
+     * 获取市场卡牌拍卖列表
+     * @param request
+     * @param account
+     * @return
+     */
+    @RequestMapping("/marketCardList")
+    public RestResultModel marketCardList(HttpServletRequest request,String account){
+    	String pageSize = request.getParameter("pageSize");
+    	if(StringUtils.isEmpty(pageSize))
+    		pageSize = "20";
+    	String pageNumber = request.getParameter("pageNumber");
+    	if(StringUtils.isEmpty(pageNumber))
+    		return new RestResultModel(RestResponseCode.REQUEST_PARAM_ERROR,"请求参数为空！"+RestResponseCode.REQUEST_PARAM_ERROR,"");
+    		
+    	Map<String,Object> res = contractService.marketCardList(Integer.parseInt(pageSize), Integer.parseInt(pageNumber));
+
+        return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC,JSON.toJSON(res));
+    }
+    
     @RequestMapping("/test")
     public RestResultModel test(HttpServletRequest request){
         return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC,null);
