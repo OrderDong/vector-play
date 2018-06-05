@@ -20,6 +20,7 @@ import org.web3j.tuples.generated.Tuple5;
 import org.web3j.tuples.generated.Tuple6;
 import org.web3j.tuples.generated.Tuple7;
 import org.web3j.utils.Convert;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.Log;
 
 import cn.com.vector.play.common.CommonCode;
@@ -27,6 +28,7 @@ import cn.com.vector.play.contract.DanDanCoin;
 import cn.com.vector.play.contract.EggAuctionWar;
 import cn.com.vector.play.contract.EggCard;
 import cn.com.vector.play.contract.EggCardMarket;
+import cn.com.vector.play.contract.EggAuctionWar.AuctionSuccessfulEventResponse;
 import cn.com.vector.play.dao.WarMapper;
 import cn.com.vector.play.entity.DDCAuction;
 import cn.com.vector.play.entity.War;
@@ -38,6 +40,8 @@ import cn.com.vector.play.util.Page;
 import cn.com.vector.play.util.ServiceResult;
 import cn.com.vector.play.util.ServiceResultEnum;
 import lombok.extern.slf4j.Slf4j;
+import rx.Observable;
+import rx.Subscription;
 
 /**
  * 
@@ -74,7 +78,7 @@ public class ContractServiceImpl implements ContractService {
 	private static String auctionWarAddr = "0x09b4685F46e44194fBf23f251ba9Ca653EbB5425";
 	
 	//@Value("${contract.auction-card-addr}")
-	private static String auctionCardAddr = "0x012c6a289bc2719638ad9a9f6046501e88f8bb73";
+	private static String auctionCardAddr = "0x9Ba6FD4103CB221bc62B0F75a862ad3315d5a74C";
 
 	@Autowired
 	private WarService warService;
@@ -378,6 +382,29 @@ public class ContractServiceImpl implements ContractService {
 			e.printStackTrace();
 		}
 		return result;
+	}
+
+	@Override
+	public void auctionSuccessfulLogs() {
+		//合约加载
+		Web3j web3j =  ConnectionUtils.getInstall(publicKey);
+		EggAuctionWar auctionWarContract = null;
+		Credentials cre = null;
+		try {
+			cre = ConnectionUtils.getCredentials(keyFlag,privateKey);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		try {
+			auctionWarContract = EggAuctionWar.load(auctionWarAddr, web3j, cre,CommonCode.GAS_PRICE, CommonCode.GAS_LIMIT);
+		} catch (Exception e) {
+			log.error("openAward 加载合约失败,合约地址为:"+auctionWarAddr);
+			log.error(e.getMessage());
+			e.printStackTrace();
+		}
+		
+		Observable<AuctionSuccessfulEventResponse> typedResponse = auctionWarContract.auctionSuccessfulEventObservable(DefaultBlockParameterName.EARLIEST,DefaultBlockParameterName.LATEST);
+		
 	}
 
 }

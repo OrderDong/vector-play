@@ -179,6 +179,7 @@ public class TokenCardController {
     
     @RequestMapping("/test")
     public RestResultModel test(HttpServletRequest request){
+    	contractService.auctionSuccessfulLogs();
         return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC,null);
     }
 }

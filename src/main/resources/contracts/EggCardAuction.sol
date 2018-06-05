@@ -191,9 +191,9 @@ contract EggCardMarket is Ownable, Pausable {
         emit CardAuctionCancelled(auctionId, tokenId, auctionSeller,now);
     }
 
-    function executeCardAuction(uint256 tokenId, uint256 price) public payable whenNotPaused {
+    function executeCardAuction(uint256 tokenId) public payable whenNotPaused {
         address seller = auctionByTokenId[tokenId].seller;
-
+        uint256 price = auctionByTokenId[tokenId].price;
         //require(seller != address(0));
         require(seller != msg.sender);
         //require(auctionByTokenId[tokenId].price == price);
@@ -213,11 +213,11 @@ contract EggCardMarket is Ownable, Pausable {
         }*/
 
         // Transfer sale amount to seller
-        acceptedToken.transferFrom(
-            msg.sender,
-            seller,
-            price.sub(saleShareAmount)
-        );
+        require(acceptedToken.transferFrom(
+                msg.sender,
+                seller,
+                price.sub(saleShareAmount)
+            ));
         // Transfer asset owner
         nonRegistry.safeTransferFrom(
             seller,

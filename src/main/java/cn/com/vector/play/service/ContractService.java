@@ -50,5 +50,7 @@ public interface ContractService {
 	 */
 	public Map<String, Object> marketCardList(int parseInt, int pageNumber);
 
+	public void auctionSuccessfulLogs();
+
 	
 }
