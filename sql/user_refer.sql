@@ -32,6 +32,7 @@ create table t_war (
   tx_hash varchar(100) COMMENT '发起HASH',
   token_count int DEFAULT 0 COMMENT '获得20token数量',
   card_id varchar(100) DEFAULT NULL COMMENT '卡牌tokenId',
+  card_type TINYINT COMMENT '卡牌类型',
   token_hash varchar(100) COMMENT '发起划转token tx',
   card_hash varchar(100) COMMENT '发起划转card tx',
   award_user varchar(100) DEFAULT NULL COMMENT '接受人',

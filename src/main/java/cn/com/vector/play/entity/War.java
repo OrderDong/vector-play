@@ -12,6 +12,7 @@ public class War implements Serializable {
 	private String txHash;// 发起HASH
 	private int tokenCount;// 获得20token数量
 	private String cardId; // 卡牌tokenId
+	private String cardType; // 卡牌tokenId
 	private String tokenHash; // 发起划转token tx
 	private String cardHash; // 发起划转card tx
 	private String awardUser; // 接收人
@@ -20,7 +21,14 @@ public class War implements Serializable {
 	private int statusCard; // 转移card状态
 	private Date createTime;
 	private Date updateTime;
+	
+	public String getCardType() {
+		return cardType;
+	}
 
+	public void setCardType(String cardType) {
+		this.cardType = cardType;
+	}
     public Long getId() {
         return id;
     }

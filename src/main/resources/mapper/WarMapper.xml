@@ -6,6 +6,7 @@
 		<result column="tx_hash" jdbcType="VARCHAR" property="txHash" />
 		<result column="token_count" jdbcType="INTEGER" property="tokenCount" />
 		<result column="card_id" jdbcType="VARCHAR" property="cardId" />
+		<result column="card_type" jdbcType="TINYINT" property="cardType" />
 		<result column="token_hash" jdbcType="VARCHAR" property="tokenHash" />
 		<result column="card_hash" jdbcType="VARCHAR" property="cardHash" />
 		<result column="award_user" jdbcType="VARCHAR" property="awardUser" />
@@ -16,7 +17,7 @@
 		<result column="status_card" jdbcType="INTEGER" property="statusCard" />
 	</resultMap>
 	<sql id="Base_Column_List">
-		id, tx_hash, token_count, card_id, token_hash, card_hash, award_user,
+		id, tx_hash, token_count, card_id, card_type, token_hash, card_hash, award_user,
 		create_time,
 		update_time, update_user, status_ddc, status_card
 	</sql>
@@ -47,13 +48,13 @@
 	</delete>
 	<insert id="insert" parameterType="cn.com.vector.play.entity.War">
 		insert into t_war (id, tx_hash, token_count,
-		card_id, token_hash, card_hash,
+		card_id, card_type, token_hash, card_hash,
 		award_user, create_time, update_time,
 		update_user, status_ddc, status_card
 		)
 		values (#{id,jdbcType=BIGINT}, #{txHash,jdbcType=VARCHAR},
 		#{tokenCount,jdbcType=INTEGER},
-		#{cardId,jdbcType=VARCHAR}, #{tokenHash,jdbcType=VARCHAR}, #{cardHash,jdbcType=VARCHAR},
+		#{cardId,jdbcType=VARCHAR}, #{cardType,jdbcType=TINYINT}, #{tokenHash,jdbcType=VARCHAR}, #{cardHash,jdbcType=VARCHAR},
 		#{awardUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
 		#{updateTime,jdbcType=TIMESTAMP},
 		#{updateUser,jdbcType=VARCHAR}, #{statusDdc,jdbcType=INTEGER}, #{statusCard,jdbcType=INTEGER}
@@ -182,6 +183,7 @@
 		set tx_hash = #{txHash,jdbcType=VARCHAR},
 		token_count = #{tokenCount,jdbcType=INTEGER},
 		card_id = #{cardId,jdbcType=VARCHAR},
+		card_type = #{cardType,jdbcType=TINYINT},
 		token_hash = #{tokenHash,jdbcType=VARCHAR},
 		card_hash = #{cardHash,jdbcType=VARCHAR},
 		award_user = #{awardUser,jdbcType=VARCHAR},

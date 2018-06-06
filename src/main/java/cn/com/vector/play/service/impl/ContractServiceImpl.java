@@ -4,6 +4,7 @@ package cn.com.vector.play.service.impl;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -13,14 +14,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.web3j.abi.EventEncoder;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Event;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.core.methods.response.EthLog.LogResult;
 import org.web3j.tuples.generated.Tuple5;
 import org.web3j.tuples.generated.Tuple6;
 import org.web3j.tuples.generated.Tuple7;
 import org.web3j.utils.Convert;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.Log;
 
 import cn.com.vector.play.common.CommonCode;
@@ -147,6 +156,7 @@ public class ContractServiceImpl implements ContractService {
 			EggCard.CreatedCardEventResponse obj = results.get(0);
 			tokenId = obj.cardId;
 			war.setCardId(tokenId.toString());
+			war.setCardType(cardAward);
 		}else{
 			log.info("获取已创建的卡牌失败");
 			return ServiceResult.returnResult(ServiceResultEnum.REQUEST_PARAM_ERROR.getTypeId(),"获取卡牌失败,"+ServiceResultEnum.REQUEST_PARAM_ERROR.getMessage(),null);
@@ -403,8 +413,18 @@ public class ContractServiceImpl implements ContractService {
 			e.printStackTrace();
 		}
 		
-		Observable<AuctionSuccessfulEventResponse> typedResponse = auctionWarContract.auctionSuccessfulEventObservable(DefaultBlockParameterName.EARLIEST,DefaultBlockParameterName.LATEST);
 		
+		EthFilter filter = new EthFilter(DefaultBlockParameterName.EARLIEST,DefaultBlockParameterName.LATEST, "");
+	    Event AUCTIONSUCCESSFUL_EVENT = new Event("AuctionSuccessful", 
+	            Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}, new TypeReference<Address>() {}),
+	            Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}, new TypeReference<Uint256>() {}, new TypeReference<Uint256>() {}, new TypeReference<Uint256>() {}));
+        filter.addSingleTopic(EventEncoder.encode(AUCTIONSUCCESSFUL_EVENT));
+        try {
+        	EthLog ethLog = web3j.ethGetLogs(filter).send();
+			List<LogResult> list1 = ethLog.getResult();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
-
 }
