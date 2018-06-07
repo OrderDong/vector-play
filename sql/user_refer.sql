@@ -44,3 +44,4 @@ create table t_war (
   constraint pk_t_war primary key(id)
 ) charset=utf8 ENGINE=InnoDB;
 create index idx_t_war_award_user_id on t_war(award_user);
+create unique index idx_t_war_tx on t_war(tx_hash);

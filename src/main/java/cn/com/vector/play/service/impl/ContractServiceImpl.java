@@ -84,7 +84,7 @@ public class ContractServiceImpl implements ContractService {
 	private static String cardAddr = "0xf02F2421678A129CD22E4799954eaB73CB338555";
 	
 	//@Value("${contract.auction-war-addr}")
-	private static String auctionWarAddr = "0x09b4685F46e44194fBf23f251ba9Ca653EbB5425";
+	private static String auctionWarAddr = "0x30F3998A63d1c268456CFB22ce81B6e35D8cc6d8";
 	
 	//@Value("${contract.auction-card-addr}")
 	private static String auctionCardAddr = "0x9Ba6FD4103CB221bc62B0F75a862ad3315d5a74C";
@@ -111,11 +111,10 @@ public class ContractServiceImpl implements ContractService {
 			e1.printStackTrace();
 		}
 		try {
-			auctionWarContract = EggAuctionWar.load(auctionWarAddr, web3j, cre,CommonCode.GAS_PRICE, CommonCode.GAS_LIMIT);
+			auctionWarContract = ConnectionUtils.getEggAuctionWar(auctionWarAddr, cre);
 		} catch (Exception e) {
-			log.error("openAward 加载合约失败,合约地址为:"+auctionWarAddr);
+			log.error("openAward 加载战斗合约失败,合约地址为:"+auctionWarAddr);
 			log.error(e.getMessage());
-			e.printStackTrace();
 			return ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
 					ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"",null);
 		}
@@ -126,6 +125,8 @@ public class ContractServiceImpl implements ContractService {
 		} catch (Exception e) {
 			log.error("openAward 合约调用开奖错误");
 			log.error(e.getMessage());
+			return ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
+					ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"",null);
 		}
 		log.info("startTxHash:"+txHash+",executing finish war waiting...");
 		String finishTxHash = transactionReceipt.getTransactionHash();
@@ -133,18 +134,20 @@ public class ContractServiceImpl implements ContractService {
 		//TODO 721合约创建token并转移
 		EggCard eggCardContract = null;
 		try {
-			eggCardContract = EggCard.load(cardAddr, web3j, cre,CommonCode.GAS_PRICE, CommonCode.GAS_LIMIT);
+			eggCardContract = ConnectionUtils.getEggCard(cardAddr, cre);
 		} catch (Exception e) {
 			log.error("openAward 加载721合约失败,合约地址为:"+cardAddr);
 			log.error(e.getMessage());
 		}
-		//创建合约
+		//创建卡牌
 		TransactionReceipt cardReceipt = null;
 		try {
 			cardReceipt = eggCardContract.createCard(new BigInteger(cardAward),new BigInteger("0"),new BigInteger("0"),publicKey).send();
 		} catch (Exception e) {
-			log.error("openAward 合约调用开奖错误");
+			log.error("openAward 创建卡牌失败");
 			log.error(e.getMessage());
+			return ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
+					ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"",null);
 		}
 		log.info("startTxHash:"+txHash+",executing finish war waiting...");
 		String cardCreateTxHash = cardReceipt.getTransactionHash();
@@ -168,6 +171,8 @@ public class ContractServiceImpl implements ContractService {
 		} catch (Exception e) {
 			log.error("卡牌tokenId转移失败");
 			log.error(e.getMessage());
+			return ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
+					ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"",null);
 		}
 		log.info("startTxHash:"+txHash+",executing transfer card waiting...");
 		String cardTransferTxHash = cardTransfer.getTransactionHash();
@@ -183,10 +188,12 @@ public class ContractServiceImpl implements ContractService {
 		//TODO 20合约token转移
 		DanDanCoin ddcContract = null;
 		try {
-			ddcContract = DanDanCoin.load(tokenAddr, web3j, cre,CommonCode.GAS_PRICE, CommonCode.GAS_LIMIT);
+			ddcContract = ConnectionUtils.getDanDanCoin(tokenAddr, cre);
 		} catch (Exception e) {
 			log.error("加载ERC20合约失败,合约地址为:"+tokenAddr);
 			log.error(e.getMessage());
+			return ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
+					ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"",null);
 		}
 
 		TransactionReceipt ddcTransfer = null;
@@ -195,6 +202,8 @@ public class ContractServiceImpl implements ContractService {
 		} catch (Exception e) {
 			log.error("ERCtoken 转移失败");
 			log.error(e.getMessage());
+			return ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
+					ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"",null);
 		}
 		log.info("startTxHash:"+txHash+",executing ddc transfer waiting...");
 		String ddcTransferTxHash = ddcTransfer.getTransactionHash();
@@ -282,7 +291,7 @@ public class ContractServiceImpl implements ContractService {
 			e1.printStackTrace();
 		}
 		try {
-			auctionWarContract = EggAuctionWar.load(auctionWarAddr, web3j, cre,CommonCode.GAS_PRICE, CommonCode.GAS_LIMIT);
+			auctionWarContract = ConnectionUtils.getEggAuctionWar(auctionWarAddr, cre);
 		} catch (Exception e) {
 			log.error("加载合约失败,合约地址为:"+auctionWarAddr);
 			log.error(e.getMessage());
@@ -340,8 +349,8 @@ public class ContractServiceImpl implements ContractService {
 			e1.printStackTrace();
 		}
 		try {
-			eggCardMarket = EggCardMarket.load(auctionCardAddr, web3j, cre,CommonCode.GAS_PRICE, CommonCode.GAS_LIMIT);
-			eggCard = EggCard.load(cardAddr, web3j, cre,CommonCode.GAS_PRICE, CommonCode.GAS_LIMIT);
+			eggCardMarket = ConnectionUtils.getEggCardMarket(auctionCardAddr, cre);
+			eggCard = ConnectionUtils.getEggCard(cardAddr, cre);
 		} catch (Exception e) {
 			log.error("加载合约失败,合约地址为:"+auctionWarAddr);
 			log.error(e.getMessage());
@@ -406,7 +415,7 @@ public class ContractServiceImpl implements ContractService {
 			e1.printStackTrace();
 		}
 		try {
-			auctionWarContract = EggAuctionWar.load(auctionWarAddr, web3j, cre,CommonCode.GAS_PRICE, CommonCode.GAS_LIMIT);
+			auctionWarContract = ConnectionUtils.getEggAuctionWar(auctionWarAddr, cre);
 		} catch (Exception e) {
 			log.error("openAward 加载合约失败,合约地址为:"+auctionWarAddr);
 			log.error(e.getMessage());

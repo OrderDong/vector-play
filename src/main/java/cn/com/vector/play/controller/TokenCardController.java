@@ -1,29 +1,27 @@
 package cn.com.vector.play.controller;
 
-import cn.com.vector.play.entity.DDCAuction;
-import cn.com.vector.play.entity.War;
-import cn.com.vector.play.response.RestResponseCode;
-import cn.com.vector.play.response.RestResultModel;
-import cn.com.vector.play.service.ContractService;
-import cn.com.vector.play.service.WarService;
-import cn.com.vector.play.util.Page;
-import cn.com.vector.play.util.ServiceResult;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSON;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import cn.com.vector.play.entity.War;
+import cn.com.vector.play.response.RestResponseCode;
+import cn.com.vector.play.response.RestResultModel;
+import cn.com.vector.play.service.ContractService;
+import cn.com.vector.play.service.WarService;
+import cn.com.vector.play.util.ServiceResult;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by liuwd on 2018/5/30.
@@ -80,6 +78,7 @@ public class TokenCardController {
         //TODO 调用服务送奖励
         ServiceResult result = contractService.openAward(txHash,addr,cardAward,tokenAward);
         if(!ServiceResult.isSuccess(result)){
+        	storeRes.remove(txHash);
             return new RestResultModel(RestResponseCode.FAILED,"调用服务失败！"+RestResponseCode.FAILED_DESC,"");
         }
         //TODO storeRes 缓存奖励
