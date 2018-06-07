@@ -52,8 +52,8 @@ public class TokenCardController {
     @Value("${pro.tokenval}")
     private String tokenVal;
 
-    //@RequestMapping("/open")
-    @PostMapping("/open")
+    @RequestMapping("/open")
+//    @PostMapping("/open")
     public RestResultModel openAward(HttpServletRequest request,String txHash,String addr){
 
         if(StringUtils.isBlank(txHash) || StringUtils.isBlank(addr)){
