@@ -242,46 +242,20 @@ contract EggAuction is Ownable,Pausable{
 }
 
 contract EggAuctionWar is EggAuction{
-    struct EggWar {
-        address owner;
-        uint256 count;
-        uint256 time;
-    }
-    mapping (address => EggWar) eggWar;
-
     event WarCreated(
         address indexed ower,
         uint256 count,
         uint256 time);
-    event WarExecuted(
-        address indexed ower,
-        uint256 cardTokenId,
-        uint256 ddcCount,
-        uint256 time);
-    function joinWar(uint256 _count) public whenNotPaused{
-        require(_count >= 1);
-        require(acceptedToken.balanceOf(msg.sender) >=1 &&
-        acceptedToken.balanceOf(msg.sender) >= ownerCount[msg.sender].add(_count));
+        
+    function joinWar(uint256 _count) public whenNotPaused {
+        require(_count == 10);
+        uint256 bacount = acceptedToken.balanceOf(msg.sender);
+        require(bacount >= 1);
+        require(bacount >= ownerCount[msg.sender].add(_count));
         require(
             acceptedToken.transferFrom(msg.sender,owner,_count.mul(publicationFeeInWei))
         );
-        eggWar[msg.sender] =  EggWar({owner:msg.sender,count:_count,time:now});
         emit WarCreated(msg.sender,_count,now);
-    }
-    function finishWar(address _to,uint256 _count,uint256 _cardTokenId) public whenNotPaused onlyOwner {
-        require(eggWar[_to].count>0);
-        delete eggWar[_to];
-        emit WarExecuted(_to,_cardTokenId,_count,now);
-    }
-    function getWarByOwner(address _owner) external view returns (
-        address owner,
-        uint256 count,
-        uint256 time
-    ) {
-        EggWar storage war = eggWar[_owner];
-        owner =war.owner;
-        count = war.count;
-        time = war.time;
     }
 }
 contract EggAuctionCode is EggAuctionWar{
