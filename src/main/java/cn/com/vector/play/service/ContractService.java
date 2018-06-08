@@ -1,7 +1,11 @@
 package cn.com.vector.play.service;
 
+import java.math.BigInteger;
 import java.util.Map;
 
+import cn.com.vector.play.contract.DanDanCoin;
+import cn.com.vector.play.contract.EggCard;
+import cn.com.vector.play.entity.War;
 import cn.com.vector.play.util.ServiceResult;
 
 /**
@@ -50,6 +54,33 @@ public interface ContractService {
 	 */
 	public Map<String, Object> marketCardList(int parseInt, int pageNumber);
 
+	/**
+	 * 创建卡牌
+	 * @param toAddress
+	 * @param cardAward
+	 * @param war
+	 * @param startTxHash
+	 */
+	public void createCard(String toAddress, String cardAward, War war, String startTxHash, EggCard eggCardContract);
+	
+	/**
+	 * 转移卡牌
+	 * @param toAddress
+	 * @param tokenId
+	 * @return
+	 */
+	public void transferCard(String toAddress, BigInteger tokenId, War war, String startTxHash, EggCard eggCardContract);
+	
+	/**
+	 * DDC转移
+	 * @param toAddress
+	 * @param tokenCount
+	 * @param war
+	 * @param startTxHash
+	 * @param ddcContract
+	 */
+	public void transferDDC(String toAddress, String tokenCount, War war, String startTxHash, DanDanCoin ddcContract);
+	
 	public void auctionSuccessfulLogs();
 
 	

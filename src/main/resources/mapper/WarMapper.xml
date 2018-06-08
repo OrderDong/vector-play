@@ -46,7 +46,7 @@
 		delete from t_war
 		where id = #{id,jdbcType=BIGINT}
 	</delete>
-	<insert id="insert" parameterType="cn.com.vector.play.entity.War">
+	<insert id="insert" parameterType="cn.com.vector.play.entity.War" keyProperty="id" useGeneratedKeys="true">
 		insert into t_war (id, tx_hash, token_count,
 		card_id, card_type, token_hash, card_hash,
 		award_user, create_time, update_time,

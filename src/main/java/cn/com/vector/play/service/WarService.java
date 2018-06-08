@@ -23,5 +23,5 @@ public interface WarService {
 
     War selectByTxHash(String txHash);
     
-    War selectByAwardUser(String awardUser);
+    List<War> selectByAwardUser(String awardUser);
 }

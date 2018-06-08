@@ -1,5 +1,7 @@
 package cn.com.vector.service;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import com.alibaba.fastjson.JSON;
@@ -36,7 +38,7 @@ public class WarServiceTest {
 	
 	@Test
 	public void selectByAwardUser() {
-		War war = warService.selectByAwardUser("0x339177a6a2b21a8b7ce76811c86d3a2c99301355");
+		List<War> war = warService.selectByAwardUser("0x339177a6a2b21a8b7ce76811c86d3a2c99301355");
 		System.out.println(JSON.toJSON(war));
 	}
 }

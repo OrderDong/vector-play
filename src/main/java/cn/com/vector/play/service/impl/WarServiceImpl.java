@@ -54,10 +54,10 @@ public class WarServiceImpl implements WarService {
 	}
 
 	@Override
-	public War selectByAwardUser(String awardUser) {
+	public List<War> selectByAwardUser(String awardUser) {
 		List<War> warList = warMapper.selectByAwardUser(awardUser);
 		if(warList.size() > 0) {
-			return warList.get(0);
+			return warList;
 		}
 		return null;
 	}

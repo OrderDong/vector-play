@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,8 @@ import cn.com.vector.play.contract.EggAuctionWar.AuctionSuccessfulEventResponse;
 import cn.com.vector.play.dao.WarMapper;
 import cn.com.vector.play.entity.DDCAuction;
 import cn.com.vector.play.entity.War;
+import cn.com.vector.play.response.RestResponseCode;
+import cn.com.vector.play.response.RestResultModel;
 import cn.com.vector.play.service.ContractService;
 import cn.com.vector.play.service.WarService;
 import cn.com.vector.play.util.ConnectionUtils;
@@ -84,7 +88,7 @@ public class ContractServiceImpl implements ContractService {
 	private static String cardAddr = "0xf02F2421678A129CD22E4799954eaB73CB338555";
 	
 	//@Value("${contract.auction-war-addr}")
-	private static String auctionWarAddr = "0x30F3998A63d1c268456CFB22ce81B6e35D8cc6d8";
+	private static String auctionWarAddr = "0xe69d06c543C66d0707E65b53a4808fB4fC727ac3";
 	
 	//@Value("${contract.auction-card-addr}")
 	private static String auctionCardAddr = "0x9Ba6FD4103CB221bc62B0F75a862ad3315d5a74C";
@@ -95,13 +99,19 @@ public class ContractServiceImpl implements ContractService {
 	@Override
 	public ServiceResult openAward(String txHash, String addr, String cardAward, String tokenCount) {
 		log.info("into open award service impl,txHash:"+txHash+",addr:"+addr+",cardAward:"+cardAward+",token:"+tokenCount);
-		War war = new War();
-		war.setTxHash(txHash);
-		war.setAwardUser(addr);
-		warService.createWar(war, "add");
-		war = warService.selectByTxHash(txHash);
-		//TODO 检验
-		//合约加载
+		War war = warService.selectByTxHash(txHash);
+		if(war == null) {
+			war = new War();
+			war.setTxHash(txHash);
+			war.setAwardUser(addr);
+			war.setCardType(cardAward);
+			war.setTokenCount(Integer.parseInt(tokenCount));
+			warService.createWar(war, "add");
+		}
+		
+		/*
+		 * 加载战斗合约
+		 */
 		Web3j web3j =  ConnectionUtils.getInstall(publicKey);
 		EggAuctionWar auctionWarContract = null;
 		Credentials cre = null;
@@ -118,8 +128,11 @@ public class ContractServiceImpl implements ContractService {
 			return ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
 					ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"",null);
 		}
-		//合约调用开奖
-		TransactionReceipt transactionReceipt = null;
+		
+		/*
+		 * 合约调用开奖
+		 */
+/*		TransactionReceipt transactionReceipt = null;
 		try {
 			transactionReceipt = auctionWarContract.finishWar(addr,new BigInteger(tokenCount),new BigInteger(cardAward)).send();
 		} catch (Exception e) {
@@ -130,62 +143,23 @@ public class ContractServiceImpl implements ContractService {
 		}
 		log.info("startTxHash:"+txHash+",executing finish war waiting...");
 		String finishTxHash = transactionReceipt.getTransactionHash();
-		log.info("startTxHash:"+txHash+",finshWar seccess txHash:"+finishTxHash);
-		//TODO 721合约创建token并转移
+		log.info("startTxHash:"+txHash+",finshWar seccess txHash:"+finishTxHash);*/
+		
+		/*
+		 * 721合约加载
+		 */
 		EggCard eggCardContract = null;
 		try {
 			eggCardContract = ConnectionUtils.getEggCard(cardAddr, cre);
 		} catch (Exception e) {
-			log.error("openAward 加载721合约失败,合约地址为:"+cardAddr);
+			log.error("openAward 加载721合约失败,合约地址为:" + cardAddr);
 			log.error(e.getMessage());
 		}
-		//创建卡牌
-		TransactionReceipt cardReceipt = null;
-		try {
-			cardReceipt = eggCardContract.createCard(new BigInteger(cardAward),new BigInteger("0"),new BigInteger("0"),publicKey).send();
-		} catch (Exception e) {
-			log.error("openAward 创建卡牌失败");
-			log.error(e.getMessage());
-			return ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
-					ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"",null);
-		}
-		log.info("startTxHash:"+txHash+",executing finish war waiting...");
-		String cardCreateTxHash = cardReceipt.getTransactionHash();
-		log.info("startTxHash:"+txHash+",cardCreateTxHash seccess cardCreateTxHash:"+cardCreateTxHash);
+		createCard(addr, cardAward, war, txHash, eggCardContract);
 
-		List<EggCard.CreatedCardEventResponse> results =  eggCardContract.getCreatedCardEvents(cardReceipt);
-		BigInteger tokenId = new BigInteger("0");
-		if(results.size() > 0){
-			EggCard.CreatedCardEventResponse obj = results.get(0);
-			tokenId = obj.cardId;
-			war.setCardId(tokenId.toString());
-			war.setCardType(cardAward);
-		}else{
-			log.info("获取已创建的卡牌失败");
-			return ServiceResult.returnResult(ServiceResultEnum.REQUEST_PARAM_ERROR.getTypeId(),"获取卡牌失败,"+ServiceResultEnum.REQUEST_PARAM_ERROR.getMessage(),null);
-		}
-
-		TransactionReceipt cardTransfer = null;
-		try {
-			cardTransfer = eggCardContract.transfer(addr,tokenId).send();
-		} catch (Exception e) {
-			log.error("卡牌tokenId转移失败");
-			log.error(e.getMessage());
-			return ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
-					ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"",null);
-		}
-		log.info("startTxHash:"+txHash+",executing transfer card waiting...");
-		String cardTransferTxHash = cardTransfer.getTransactionHash();
-		war.setCardHash(cardTransferTxHash);
-		if(cardTransfer.isStatusOK()) {
-			war.setStatusCard(1);
-		} else {
-			war.setStatusCard(2);
-		}
-		
-		log.info("startTxHash:"+txHash+",cardTransferTxHash seccess transfer:"+cardTransferTxHash);
-
-		//TODO 20合约token转移
+		/*
+		 * ERC20合约加载
+		 */
 		DanDanCoin ddcContract = null;
 		try {
 			ddcContract = ConnectionUtils.getDanDanCoin(tokenAddr, cre);
@@ -195,34 +169,121 @@ public class ContractServiceImpl implements ContractService {
 			return ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
 					ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"",null);
 		}
-
-		TransactionReceipt ddcTransfer = null;
-		try {
-			ddcTransfer = ddcContract.transfer(addr,new BigInteger(Convert.toWei(tokenCount, Convert.Unit.ETHER).toString())).send();
-		} catch (Exception e) {
-			log.error("ERCtoken 转移失败");
-			log.error(e.getMessage());
-			return ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
-					ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"",null);
-		}
-		log.info("startTxHash:"+txHash+",executing ddc transfer waiting...");
-		String ddcTransferTxHash = ddcTransfer.getTransactionHash();
-		war.setTokenCount(Integer.parseInt(tokenCount));
-		war.setTokenHash(ddcTransferTxHash);
-		if(ddcTransfer.isStatusOK()) {
-			war.setStatusDdc(1);
-		} else {
-			war.setStatusDdc(2);
-		}
-		log.info("startTxHash:"+txHash+",ddcTransferTxHash seccess transfer:"+ddcTransferTxHash);
-
-		//TODO 数据保存
-		war.setUpdateUser(addr);
-		warService.createWar(war, "update");
+		transferDDC(addr, tokenCount, war, txHash, ddcContract);
+		
 		log.info("此次游戏结束。startTxHash:"+txHash);
 		ServiceResult serRet = ServiceResult.returnResult(ServiceResultEnum.SUCCESS.getTypeId(),
 				ServiceResultEnum.SUCCESS.getMessage(),null);
 		return serRet;
+	}
+	
+	@Override
+	public void createCard(String toAddress, String cardAward, War war, String startTxHash, EggCard eggCardContract) {
+		/*
+		 * 创建卡牌
+		 */
+		CompletableFuture<TransactionReceipt> cardReceiptC = eggCardContract
+				.createCard(new BigInteger(cardAward), new BigInteger("0"), new BigInteger("0"), publicKey).sendAsync();
+		Runnable cardAction = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					TransactionReceipt cardReceipt = cardReceiptC.get();
+					String cardCreateTxHash = cardReceipt.getTransactionHash();
+					log.info("startTxHash:"+startTxHash+",cardCreateTxHash seccess cardCreateTxHash:"+cardCreateTxHash);
+					
+					if(cardReceipt.isStatusOK()) {
+						List<EggCard.CreatedCardEventResponse> results =  eggCardContract.getCreatedCardEvents(cardReceipt);
+						BigInteger tokenId = new BigInteger("0");
+						if(results.size() > 0){
+							tokenId = results.get(0).cardId;
+							war.setCardId(tokenId.toString());
+							war.setUpdateUser(toAddress);
+							warService.createWar(war, "update");
+						}else{
+							log.info("获取已创建的卡牌失败");
+						}
+						transferCard(toAddress, tokenId, war, startTxHash, eggCardContract);
+					}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		cardReceiptC.thenRun(cardAction);
+	}
+	
+	@Override
+	public void transferCard(String toAddress, BigInteger tokenId, War war, String startTxHash, EggCard eggCardContract) {
+		/*
+		 * 卡牌转移
+		 */
+		CompletableFuture<TransactionReceipt> cardTransferC = eggCardContract.transfer(toAddress, tokenId).sendAsync();
+		Runnable action = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					log.info("startTxHash:" + startTxHash + ",executing transfer card waiting...");
+					TransactionReceipt cardTransfer = cardTransferC.get();
+					String cardTransferTxHash = cardTransfer.getTransactionHash();
+					war.setCardHash(cardTransferTxHash);
+					if (cardTransfer.isStatusOK()) {
+						war.setStatusCard(1);
+					} else {
+						war.setStatusCard(2);
+					}
+					warService.createWar(war, "update");
+					log.info("startTxHash:" + startTxHash + ",cardTransferTxHash seccess transfer:" + cardTransferTxHash);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		cardTransferC.thenRun(action);
+	}
+	
+	@Override
+	public void transferDDC(String toAddress, String tokenCount, War war, String startTxHash, DanDanCoin ddcContract) {
+		/*
+		 * DDC转移
+		 */
+		CompletableFuture<TransactionReceipt> ddcTransferC = ddcContract
+				.transfer(toAddress,new BigInteger(Convert.toWei(tokenCount, Convert.Unit.ETHER).toString())).sendAsync();
+		Runnable action = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					log.info("startTxHash:"+startTxHash+",executing ddc transfer waiting...");
+					TransactionReceipt ddcTransfer = ddcTransferC.get();
+					String ddcTransferTxHash = ddcTransfer.getTransactionHash();
+					war.setTokenCount(Integer.parseInt(tokenCount));
+					war.setTokenHash(ddcTransferTxHash);
+					if(ddcTransfer.isStatusOK()) {
+						war.setStatusDdc(1);
+					} else {
+						war.setStatusDdc(2);
+					}
+					log.info("startTxHash:"+startTxHash+",ddcTransferTxHash seccess transfer:"+ddcTransferTxHash);
+					war.setUpdateUser(toAddress);
+					warService.createWar(war, "update");
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		ddcTransferC.thenRun(action);
 	}
 
 	@Override
@@ -233,6 +294,7 @@ public class ContractServiceImpl implements ContractService {
 
 	@Override
 	public ServiceResult verifyTransaction(String txHash, String addr) {
+		ServiceResult serRet;
 		// 获取交易记录，查询交易是否成功
 		Web3j web3j =  ConnectionUtils.getInstall(publicKey);
 		TransactionReceipt transferReceipt = null;
@@ -260,23 +322,29 @@ public class ContractServiceImpl implements ContractService {
 			String contractAddr = transferReceipt.getTo();
 			if(!fromAddr.equals(addr.toLowerCase())) {
 				log.error("当前账户与交易记录不匹配，当前账户地址为:"+fromAddr);
-				return null;
+				serRet = ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
+						ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"当前账户与交易记录不匹配",null);
+				return serRet;
 			}
 			if(!contractAddr.equals(auctionWarAddr.toLowerCase())) {
 				log.error("此交易与本平台不相关！");
-				return null;
+				serRet = ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
+						ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage()+"此交易与本平台不相关！",null);
+				return serRet;
 			}
 			
 			List<Log> list = transferReceipt.getLogs();
 			String countDDC = "0x0000000000000000000000000000000000000000000000008ac7230489e80000";
 			if(list.get(0).getTopics().get(2).contains(publicKey.substring(2).toLowerCase()) &&
 					countDDC.equals(list.get(0).getData())) {
-				ServiceResult serRet = ServiceResult.returnResult(ServiceResultEnum.SUCCESS.getTypeId(),
+				serRet = ServiceResult.returnResult(ServiceResultEnum.SUCCESS.getTypeId(),
 						ServiceResultEnum.SUCCESS.getMessage(),null);
 				return serRet;
 			}
-		}
-		return null;
+		} 
+		serRet = ServiceResult.returnResult(ServiceResultEnum.SERVICE_GENERAL_ERROR.getTypeId(),
+				ServiceResultEnum.SERVICE_GENERAL_ERROR.getMessage() + "此次交易失败！", null);
+		return serRet;
 	}
 
 	@Override
@@ -436,4 +504,6 @@ public class ContractServiceImpl implements ContractService {
 			e.printStackTrace();
 		}
 	}
+
+
 }

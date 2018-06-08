@@ -1,6 +1,7 @@
 package cn.com.vector.play.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -131,7 +132,7 @@ public class TokenCardController {
     	//TODO 校验账户
     	
     	//TODO 获取结果数据，通过账户查询
-    	War war = warService.selectByAwardUser(account);
+    	List<War> war = warService.selectByAwardUser(account);
     	
         return new RestResultModel(RestResponseCode.SUCCESS, RestResponseCode.SUCCESS_DESC,JSON.toJSON(war));
     }
